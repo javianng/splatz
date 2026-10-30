@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>SplatZ</title>
+  <meta name="description" content="Flick, smash and splat the undead. A zombie defence game you can play offline.">
+  <meta name="theme-color" content="#1b2433">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SplatZ">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- In-game HUD -->
+  <div id="hud" class="hidden">
+    <div id="slots"></div>
+    <div id="hud-right">
+      <div id="stars"><span id="star-count">0</span><span class="star-icon">★</span></div>
+      <div id="hp-bar"><div id="hp-fill"></div></div>
+      <div id="wave-bar"><div id="wave-fill"></div></div>
+      <div id="wave-label"></div>
+    </div>
+    <button id="pause-btn" class="icon-btn" aria-label="Pause">❚❚</button>
+    <div id="banner" class="hidden"></div>
+  </div>
+
+  <!-- Title -->
+  <div id="screen-title" class="screen">
+    <div class="panel title-panel">
+      <h1 class="logo">Splat<span>Z</span></h1>
+      <p class="tagline">Flick 'em. Smash 'em. Splat 'em.</p>
+      <button class="btn big" data-action="campaign">Play</button>
+      <div class="row">
+        <button class="btn" data-action="endless">Endless Siege</button>
+        <button class="btn" data-action="shop">Upgrades</button>
+      </div>
+      <div class="row small">
+        <button class="btn tiny ghost" data-action="howto">How to play</button>
+        <button class="btn tiny ghost" data-action="sound" id="sound-btn">Sound: On</button>
+        <button class="btn tiny ghost hidden" data-action="install" id="install-btn">Install</button>
+      </div>
+      <p class="fine" id="offline-status"></p>
+    </div>
+  </div>
+
+  <!-- World map -->
+  <div id="screen-maps" class="screen hidden">
+    <div class="panel wide">
+      <h2 id="maps-title">Choose a map</h2>
+      <div id="map-grid"></div>
+      <div class="row">
+        <button class="btn ghost" data-action="back-title">Back</button>
+        <button class="btn" data-action="shop">Upgrades <span class="pill"><span class="bank"></span> ★</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Levels of one map -->
+  <div id="screen-levels" class="screen hidden">
+    <div class="panel wide">
+      <h2 id="levels-title"></h2>
+      <p class="sub" id="levels-blurb"></p>
+      <div id="level-list"></div>
+      <div class="row">
+        <button class="btn ghost" data-action="back-maps">Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Briefing: difficulty + loadout -->
+  <div id="screen-brief" class="screen hidden">
+    <div class="panel wide brief">
+      <div class="brief-head">
+        <div>
+          <p class="eyebrow" id="brief-eyebrow"></p>
+          <h2 id="brief-title"></h2>
+        </div>
+        <span class="mod-chip" id="brief-mod"></span>
+      </div>
+      <div class="brief-cols">
+        <div class="brief-col">
+          <p id="brief-goal"></p>
+          <h3>Expect</h3>
+          <div id="brief-enemies" class="chips"></div>
+          <h3>Difficulty</h3>
+          <div id="diff-row" class="seg" role="radiogroup"></div>
+          <p class="fine" id="diff-note"></p>
+        </div>
+        <div class="brief-col">
+          <h3>Loadout <span class="fine" id="loadout-count"></span></h3>
+          <p class="fine">Crates only drop the specials you pick.</p>
+          <div id="loadout-grid"></div>
+          <p class="fine" id="loadout-desc"></p>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn ghost" data-action="back-brief">Back</button>
+        <button class="btn big" data-action="go">Start</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-shop" class="screen hidden">
+    <div class="panel wide">
+      <h2>Upgrades <span class="pill"><span class="bank"></span> <span class="star-icon">★</span></span></h2>
+      <div id="shop-list"></div>
+      <div class="row">
+        <button class="btn" data-action="shop-done">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-pause" class="screen hidden">
+    <div class="panel">
+      <h2>Paused</h2>
+      <button class="btn big" data-action="resume">Resume</button>
+      <button class="btn" data-action="restart">Restart</button>
+      <button class="btn ghost" data-action="quit">Quit to map</button>
+    </div>
+  </div>
+
+  <div id="screen-result" class="screen hidden">
+    <div class="panel">
+      <h2 id="result-title">Level cleared!</h2>
+      <div id="result-medal"></div>
+      <p id="result-body"></p>
+      <div id="result-unlock"></div>
+      <button class="btn big" id="result-next">Next level</button>
+      <div class="row">
+        <button class="btn" data-action="shop">Upgrades</button>
+        <button class="btn ghost" data-action="quit">Map</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-howto" class="screen hidden">
+    <div class="panel wide howto">
+      <h2>How to play</h2>
+      <ul>
+        <li><b>Grab</b> a zombie and <b>flick</b> it up. Hard landings hurt. Throw zombies <b>into other zombies</b> for combo stars.</li>
+        <li>Dead zombies fall apart. You can keep grabbing and throwing the <b>pieces</b> at the living.</li>
+        <li><b>Tap crates</b> to collect specials. Then <b>drag a special out of its box</b>: throw grenades and molotovs, drop mines, anvils and boulders, aim meteors, lightning, airstrikes and vortexes. Freeze fires on tap.</li>
+        <li>Drag a special back to the bar to cancel.</li>
+        <li>Each level can be beaten on <b>4 difficulties</b>. Harder ones pay more stars and earn better medals.</li>
+        <li>Spend <span class="star-icon">★</span> on upgrades between levels.</li>
+      </ul>
+      <button class="btn" data-action="back-howto">Got it</button>
+    </div>
+  </div>
+
+  <div id="rotate" class="hidden">
+    <div class="rotate-phone"></div>
+    <p>Turn your device sideways to play</p>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
